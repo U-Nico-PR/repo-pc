@@ -7,13 +7,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.reportespc.ui.VistaCamara
 import com.example.reportespc.ui.VistaHome
 import com.example.reportespc.ui.VistaLogin
-
 import android.app.Application
-
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import com.example.reportespc.ui.VistaListaReportes
 import com.example.reportespc.ui.VistaRegistro
 

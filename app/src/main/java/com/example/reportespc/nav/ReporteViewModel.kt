@@ -219,7 +219,7 @@ class ReporteViewModel(application: Application) : AndroidViewModel(application)
             // ---- APERTURA INMEDIATA ----
             val uriPdf = FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.provider", // 👈 Vinculado exactamente a tu XML con .provider
+                "${context.packageName}.provider", // Vinculación con .provider
                 archivoPdf
             )
 

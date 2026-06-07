@@ -1,13 +1,13 @@
 package com.example.reportespc.data.repo
 
-import android.os.Bundle // 👈 Para que reconozca el objeto Bundle
+import android.os.Bundle
 import com.example.reportespc.data.repo.dao.AutenticarRepo
 import com.google.firebase.Firebase
-import com.google.firebase.analytics.FirebaseAnalytics // 👈 Para que reconozca la clase FirebaseAnalytics
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import kotlinx.coroutines.tasks.await // 👈 Para que reconozca el método .await()
+import kotlinx.coroutines.tasks.await
 
 class AutenticarRepositoryImpl(
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()

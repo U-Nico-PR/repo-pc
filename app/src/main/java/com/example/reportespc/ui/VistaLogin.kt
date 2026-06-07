@@ -7,7 +7,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton // 👈 Importado para el botón de registro
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,7 +86,7 @@ fun VistaLogin(viewModel: AutenticarViewModel, navigateToHome: () -> Unit, navig
             enabled = !isLoading
         )
 
-        // Muestra los mensajes de error/éxito dinámicos de Firebase con estilos propios estilos
+        // Muestra los mensajes de error/éxito dinámicos de Firebase con estilos propios
         statusMessage?.let { error ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -124,7 +124,7 @@ fun VistaLogin(viewModel: AutenticarViewModel, navigateToHome: () -> Unit, navig
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón secundario estético para navegar a la Vista de Registro
+        // Botón secundario para navegar a la Vista de Registro
         TextButton(
             onClick = {
                 viewModel.limpiarMensaje() // Limpia cualquier error de la pantalla antes de cambiar de vista

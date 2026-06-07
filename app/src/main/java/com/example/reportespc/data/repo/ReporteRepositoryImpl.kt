@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-
 // Segun se tiene que actualizar este para la conexión con Firebase
 class ReporteRepositoryImpl(
     private val firebase: FirebaseFirestore = FirebaseFirestore.getInstance()

@@ -4,7 +4,6 @@ import com.example.reportespc.nav.ReporteViewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 
@@ -74,8 +72,10 @@ fun VistaListaReportes(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
             Text("Exportar a PDF")
         }
 
-        Spacer(modifier = Modifier.height(8.dp)) // Espaciado estético entre botones
+        // Espaciado estético entre botones
+        Spacer(modifier = Modifier.height(8.dp))
 
+        // Boton para regresar al formulario
         Button(
             onClick = { navigateBack() }, modifier = Modifier.fillMaxWidth()
         ) {
