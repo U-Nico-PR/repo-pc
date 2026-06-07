@@ -30,7 +30,7 @@ fun VistaCamara(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
     var tempUri by remember { mutableStateOf<Uri?>(null) }
 
     // Obtenemos la uri
-    val imagenSeleccionada = viewModel.imagenUriTemp.value.toString()
+    val tieneImagen = viewModel.imagenUriTemp.value != null
 
     // Laucher de camara
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -85,9 +85,9 @@ fun VistaCamara(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(20.dp))
-        if (imagenSeleccionada.isNullOrBlank()) {
+        if (tieneImagen) {
             AsyncImage(
-                model = Uri.parse(imagenSeleccionada),
+                model = Uri.parse(viewModel.imagenUriTemp.value),
                 contentDescription = "Foto del reporte",
                 modifier = Modifier
                     .size(300.dp)
@@ -105,7 +105,7 @@ fun VistaCamara(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
             onClick = { permissionLauncher.launch(Manifest.permission.CAMERA)},
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (imagenSeleccionada.isBlank()) "Tomar Foto" else "Tomar Otra Foto")
+            Text(if (!tieneImagen) "Tomar Foto" else "Tomar Otra Foto")
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -127,7 +127,7 @@ fun VistaCamara(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
             },
             modifier = Modifier.fillMaxWidth(),
             // Solo permitir guardar si hay foto
-            enabled = imagenSeleccionada.isNotBlank()
+            enabled = tieneImagen
         ) {
             Text("Confirmar Imagen y Regresar")
         }

@@ -23,16 +23,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.reportespc.R
-import com.example.reportespc.nav.AutenticarViewModel // 👈 OPTIMIZACIÓN: Import de nuestro nuevo ViewModel
+import com.example.reportespc.nav.AutenticarViewModel
 
 @Composable
-fun VistaLogin(
-    viewModel: AutenticarViewModel,
-    navigateToHome: () -> Unit,
-    navigateToRegistro: () -> Unit // 👈 Agregamos el parámetro para que el usuario pueda ir a crear una cuenta
-) {
-    // 💡 OPTIMIZACIÓN: Usamos estados locales para las cajas de texto como acordamos en el paso anterior,
-    // dejando el código limpio, desacoplado y reactivo.
+fun VistaLogin(viewModel: AutenticarViewModel, navigateToHome: () -> Unit, navigateToRegistro: () -> Unit) {
+
     var correoLocal by remember { mutableStateOf("") }
     var contraseniaLocal by remember { mutableStateOf("") }
 
@@ -45,7 +40,6 @@ fun VistaLogin(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Conservamos tu diseño idéntico de la imagen
         Image(
             painter = painterResource(id = R.drawable.pc),
             contentDescription = "Imagen de Computadora de Escritorio",
@@ -92,7 +86,7 @@ fun VistaLogin(
             enabled = !isLoading
         )
 
-        // Muestra los mensajes de error/éxito dinámicos de Firebase con tus estilos
+        // Muestra los mensajes de error/éxito dinámicos de Firebase con estilos propios estilos
         statusMessage?.let { error ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -105,13 +99,13 @@ fun VistaLogin(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Botón de Ingreso / Indicador de Progreso adaptado a tus estados unificados
+        // Botón de Ingreso
         if (isLoading) {
             CircularProgressIndicator(color = Color.White)
         } else {
             Button(
                 onClick = {
-                    // Invocamos tu función login con los parámetros y el callback reactivo de navegación
+                    // Invocamos función login con los parámetros y el callback reactivo de navegación
                     viewModel.login(
                         email = correoLocal,
                         contrasenia = contraseniaLocal,

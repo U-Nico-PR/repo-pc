@@ -4,7 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.reportespc.data.entity.Usuario // 👈 Tu entidad real
+import com.example.reportespc.data.entity.Usuario
 import com.example.reportespc.data.repo.dao.AutenticarRepo
 import com.example.reportespc.data.repo.AutenticarRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,16 +15,14 @@ import kotlinx.coroutines.tasks.await
 * Clase ViewModel encargada de gestionar los estados y lógica de negocio para el inicio de sesión y registro.
 * */
 class AutenticarViewModel (
-    // Instanciando la lógica del negocio con inyección por defecto (Excelente práctica)
+    // Instanciando la lógica del negocio con inyección por defecto
     private val authRepository: AutenticarRepo = AutenticarRepositoryImpl()
 ) : ViewModel() {
 
-    // Instancia de Firestore para guardar los datos de tu entidad Usuario
+    // Instancia de Firestore para guardar los datos de la entidad Usuario
     private val firestore = FirebaseFirestore.getInstance()
-
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
-
     private val _statusMessage = mutableStateOf<String?>(null)
     val statusMessage: State<String?> = _statusMessage
 
@@ -36,7 +34,6 @@ class AutenticarViewModel (
             _statusMessage.value = "Por favor, llena todos los campos."
             return
         }
-
         viewModelScope.launch {
             _isLoading.value = true
             _statusMessage.value = "Iniciando sesión..."
@@ -52,7 +49,7 @@ class AutenticarViewModel (
                     _statusMessage.value = "Error desconocido."
                 }
             }.onFailure { exception ->
-                _statusMessage.value = "Error: ${exception.localizedMessage ?: "Credenciales incorrectas"}"
+                _statusMessage.value = "Credenciales Incorrectas. Verifica la cuenta y contraseña"
             }
         }
     }
@@ -75,21 +72,21 @@ class AutenticarViewModel (
             _isLoading.value = true
             _statusMessage.value = "Creando cuenta en el servidor..."
 
-            // Paso A: Crear la credencial de acceso en Firebase Auth
+            // Crear la credencial de acceso en Firebase Auth
             val resultAuth = authRepository.registrarConCorreo(email, contrasenia)
 
             resultAuth.onSuccess { firebaseUser ->
                 if (firebaseUser != null) {
                     _statusMessage.value = "Cuenta creada. Guardando datos de perfil..."
 
-                    // Paso B: Construimos tu entidad Usuario con el ID único asignado por Firebase
+                    // Construimos la entidad Usuario con el ID único asignado por Firebase
                     val nuevoUsuario = Usuario(
                         id = firebaseUser.uid,
                         name = nombre,
                         email = email
                     )
 
-                    // Paso C: Intentamos persistir el objeto Usuario en la colección de Firestore
+                    // Intentamos persistir el objeto Usuario en la colección de Firestore
                     try {
                         firestore.collection("usuarios")
                             .document(nuevoUsuario.id)
@@ -97,11 +94,11 @@ class AutenticarViewModel (
                             .await() // Espera asíncronamente a que termine la subida
 
                         _statusMessage.value = "¡Registro completado con éxito!"
-                        onSuccess() // Ejecuta la navegación al Home de forma segura tras guardar todo
+                        onSuccess() // Ejecuta la navegación al Home de forma segura tras guardar
                     } catch (e: Exception) {
                         // Si Firestore falla, la cuenta en Auth ya se creó, le avisamos al usuario
                         _statusMessage.value = "Cuenta creada, pero falló el registro en la base de datos."
-                        onSuccess() // Opcional: Permitimos pasar ya que la cuenta existe
+                        onSuccess() // Permitimos pasar ya que la cuenta existe
                     }
                 } else {
                     _statusMessage.value = "Error inesperado al generar el perfil."
@@ -109,7 +106,6 @@ class AutenticarViewModel (
             }.onFailure { exception ->
                 _statusMessage.value = "Error al registrar: ${exception.localizedMessage ?: "Datos inválidos"}"
             }
-
             _isLoading.value = false
         }
     }

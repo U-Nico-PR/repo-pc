@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
 // Usamos AndroidViewModel para poder seguir teniendo acceso al contexto de la app (necesario para el PDF)
 class ReporteViewModel(application: Application) : AndroidViewModel(application) {
@@ -74,6 +77,30 @@ class ReporteViewModel(application: Application) : AndroidViewModel(application)
                 _uploadMessage.value = "Error al subir: ${error.localizedMessage}"
             }
         }
+    }
+
+    // Función para activa el escáner flotante de Google Play Services
+    fun escanearCodigo() {
+        // Configuración para el escáner
+        val opciones = GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+            .enableAutoZoom()
+            .build()
+
+        // Inicializamos el cliente del escáner usando el contexto
+        val scanner = GmsBarcodeScanning.getClient(getApplication(), opciones)
+
+        scanner.startScan()
+            .addOnSuccessListener { barcode ->
+                val coidgoDetectado = barcode.rawValue
+                if (!coidgoDetectado.isNullOrBlank()) {
+                    // Colocamos el valor directamente en la variable reactiva
+                    idEquipoTemp.value = coidgoDetectado
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Aquí se puede manejar errores en caso de ocurrir.
+            }
     }
 
     fun limpiarCamposFormulario() {

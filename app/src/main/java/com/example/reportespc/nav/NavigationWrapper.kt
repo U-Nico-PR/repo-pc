@@ -67,6 +67,12 @@ fun NavigationWrapper() {
                 },
                 navigateToLista = {
                     navController.navigate(ListaReportes) {}
+                },
+                navToLogout = {
+                    autenticarViewModel.limpiarMensaje()
+                    navController.navigate(Login) {
+                        popUpTo(Home) { inclusive = true }
+                    }
                 }
             )
         }

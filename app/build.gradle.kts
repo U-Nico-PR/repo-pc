@@ -87,4 +87,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx") // Para guardar/leer reportes en la nube
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Para el Scanner
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }
