@@ -8,7 +8,6 @@ import com.example.reportespc.ui.VistaCamara
 import com.example.reportespc.ui.VistaHome
 import com.example.reportespc.ui.VistaLogin
 
-
 import android.app.Application
 
 import androidx.compose.ui.platform.LocalContext
@@ -16,38 +15,65 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import com.example.reportespc.ui.VistaListaReportes
+import com.example.reportespc.ui.VistaRegistro
 
 @Composable
 fun NavigationWrapper() {
-
     val navController = rememberNavController()
     val context = LocalContext.current
-    val viewModel: ReporteViewModel = viewModel(
+
+    // ViewModel de Reportes
+    val reporteViewModel: ReporteViewModel = viewModel(
         factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
     )
+
+    // val loginViewModel: LoginViewModel = viewModel()
+    val autenticarViewModel: AutenticarViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = Login) {
         composable<Login> {
             VistaLogin(
+                viewModel = autenticarViewModel,
                 navigateToHome = {
                     navController.navigate(Home) {
                         popUpTo(Login) { inclusive = true }
                     }
+                },
+                navigateToRegistro = {
+                    navController.navigate(Registro)
+                }
+            )
+        }
+
+        composable<Registro> {
+            VistaRegistro(
+                viewModel = autenticarViewModel,
+                onRegistroSuccess = {
+                    navController.navigate(Home) {
+                        popUpTo(Login) { inclusive = true }
+                    }
+                },
+                navigateBackToLogin = {
+                    navController.popBackStack()
                 }
             )
         }
 
         composable<Home> {
             VistaHome(
-                viewModel = viewModel,
-                navigateToCamara = { navController.navigate(Camara) },
-                navigateToLista = { navController.navigate(ListaReportes) } // 3. Pasamos la navegación
+                viewModel = reporteViewModel,
+                navigateToCamara = {
+                    navController.navigate(Camara) {}
+                },
+                navigateToLista = {
+                    navController.navigate(ListaReportes) {}
+                }
             )
         }
 
         composable<Camara> {
             VistaCamara(
-                viewModel = viewModel,
+                viewModel = reporteViewModel,
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -55,7 +81,7 @@ fun NavigationWrapper() {
 
         composable<ListaReportes> {
             VistaListaReportes(
-                viewModel = viewModel,
+                viewModel = reporteViewModel,
                 navigateBack = { navController.popBackStack() }
             )
         }

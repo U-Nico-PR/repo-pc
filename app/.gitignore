@@ -1,1 +1,4 @@
 /build
+
+# Firebase configuración local
+**/google-services.json

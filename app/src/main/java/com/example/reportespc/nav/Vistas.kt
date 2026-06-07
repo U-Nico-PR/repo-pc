@@ -8,8 +8,11 @@ object Login
 @Serializable
 object Home
 
-@kotlinx.serialization.Serializable
+@Serializable
 object ListaReportes
 
 @Serializable
 object Camara
+
+@Serializable
+object Registro

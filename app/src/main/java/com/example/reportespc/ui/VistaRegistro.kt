@@ -2,12 +2,14 @@ package com.example.reportespc.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton // 👈 Importado para el botón de registro
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,29 +25,33 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.reportespc.R
-import com.example.reportespc.nav.AutenticarViewModel // 👈 OPTIMIZACIÓN: Import de nuestro nuevo ViewModel
+import com.example.reportespc.nav.AutenticarViewModel
 
 @Composable
-fun VistaLogin(
+fun VistaRegistro(
     viewModel: AutenticarViewModel,
-    navigateToHome: () -> Unit,
-    navigateToRegistro: () -> Unit // 👈 Agregamos el parámetro para que el usuario pueda ir a crear una cuenta
+    onRegistroSuccess: () -> Unit,   // Callback que te lleva al Home tras un registro exitoso
+    navigateBackToLogin: () -> Unit // Callback para regresar a la pantalla de Login
 ) {
-    // 💡 OPTIMIZACIÓN: Usamos estados locales para las cajas de texto como acordamos en el paso anterior,
-    // dejando el código limpio, desacoplado y reactivo.
+    // Estados locales para capturar los datos del formulario de registro
+    var nombreLocal by remember { mutableStateOf("") }
     var correoLocal by remember { mutableStateOf("") }
     var contraseniaLocal by remember { mutableStateOf("") }
 
-    // Escuchamos de forma reactiva los estados de carga y mensajes de nuestro nuevo ViewModel
+    // Escuchamos los estados reactivos del ViewModel unificado
     val isLoading by viewModel.isLoading
     val statusMessage by viewModel.statusMessage
 
     Column(
-        modifier = Modifier.fillMaxSize(), // Asegura que se centre en toda la pantalla
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()), // Soporte de scroll por si el teclado ocupa espacio
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Conservamos tu diseño idéntico de la imagen
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Conservamos tu diseño idéntico de imagen para la identidad de la app
         Image(
             painter = painterResource(id = R.drawable.pc),
             contentDescription = "Imagen de Computadora de Escritorio",
@@ -58,12 +64,26 @@ fun VistaLogin(
         )
 
         Text(
-            "Sistema de Reportes",
+            "Crear Cuenta",
             fontSize = 28.sp,
             color = Color.White
         )
 
         Spacer(modifier = Modifier.height(30.dp))
+
+        // Campo Nuevo: Nombre Completo (Necesario para tu Entidad Usuario en Firestore)
+        OutlinedTextField(
+            value = nombreLocal,
+            onValueChange = { nombreLocal = it },
+            label = { Text("Nombre Completo") },
+            placeholder = { Text("Tu nombre y apellido") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp),
+            enabled = !isLoading
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Campo: Correo Electrónico
         OutlinedTextField(
@@ -74,7 +94,7 @@ fun VistaLogin(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 40.dp),
-            enabled = !isLoading // Se deshabilita si Firebase está cargando
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -83,8 +103,8 @@ fun VistaLogin(
         OutlinedTextField(
             value = contraseniaLocal,
             onValueChange = { contraseniaLocal = it },
-            label = { Text("Contraseña") },
-            placeholder = { Text("Coloca tu contraseña") },
+            label = { Text("Contraseña (Mínimo 6 caracteres)") },
+            placeholder = { Text("Crea una contraseña segura") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,12 +112,12 @@ fun VistaLogin(
             enabled = !isLoading
         )
 
-        // Muestra los mensajes de error/éxito dinámicos de Firebase con tus estilos
-        statusMessage?.let { error ->
+        // Mensajes dinámicos de error o éxito de Firebase con tus estilos
+        statusMessage?.let { mensaje ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = error,
-                color = Color.Red,
+                text = mensaje,
+                color = if (mensaje.contains("éxito")) Color.Green else Color.Red,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(horizontal = 40.dp)
             )
@@ -105,40 +125,44 @@ fun VistaLogin(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Botón de Ingreso / Indicador de Progreso adaptado a tus estados unificados
+        // Botón de Registro / Indicador de Progreso
         if (isLoading) {
             CircularProgressIndicator(color = Color.White)
         } else {
             Button(
                 onClick = {
-                    // Invocamos tu función login con los parámetros y el callback reactivo de navegación
-                    viewModel.login(
+                    // Llamamos al método que registra en Auth y luego sube tu modelo a Firestore
+                    viewModel.registrarUsuario(
+                        nombre = nombreLocal,
                         email = correoLocal,
                         contrasenia = contraseniaLocal,
-                        onSuccess = { navigateToHome() }
+                        onSuccess = { onRegistroSuccess() }
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp)
                     .height(50.dp),
-                enabled = correoLocal.isNotBlank() && contraseniaLocal.isNotBlank() // Solo se activa si escribe algo
+                // Se habilita solo si el formulario está lleno
+                enabled = nombreLocal.isNotBlank() && correoLocal.isNotBlank() && contraseniaLocal.isNotBlank()
             ) {
-                Text("Iniciar Sesión")
+                Text("Registrar y Guardar")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón secundario estético para navegar a la Vista de Registro
+        // Botón secundario para regresar al inicio de sesión
         TextButton(
             onClick = {
-                viewModel.limpiarMensaje() // Limpia cualquier error de la pantalla antes de cambiar de vista
-                navigateToRegistro()
+                viewModel.limpiarMensaje() // Limpiamos mensajes previos antes de cambiar de pantalla
+                navigateBackToLogin()
             },
             enabled = !isLoading
         ) {
-            Text("¿No tienes cuenta? Regístrate aquí", color = Color.White)
+            Text("¿Ya tienes una cuenta? Inicia sesión", color = Color.White)
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }

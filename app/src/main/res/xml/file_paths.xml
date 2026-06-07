@@ -3,4 +3,5 @@
     <cache-path name="shared_images" path="." />
     <cache-path name="cache_images" path="." />
     <files-path name="files_images" path="." />
+    <cache-path name="compartido_pdf" path="."/>
 </paths>

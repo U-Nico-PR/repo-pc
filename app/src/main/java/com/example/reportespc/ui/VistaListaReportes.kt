@@ -2,6 +2,7 @@ package com.example.reportespc.ui
 
 import com.example.reportespc.nav.ReporteViewModel
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 
 import androidx.compose.foundation.lazy.items
@@ -17,39 +18,68 @@ import coil.compose.AsyncImage
 
 @Composable
 fun VistaListaReportes(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
-
     val listaReportes by viewModel.reportes.collectAsState(initial = emptyList())
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Reportes Guardados", fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
-
-        LazyColumn(modifier = Modifier.weight(1f)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Reportes Guardados",
+            fontSize = 24.sp,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+        )
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
             items(listaReportes) { reporte ->
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "ID: ${reporte.idEquipo}", style = MaterialTheme.typography.titleMedium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "ID: ${reporte.idEquipo}", style = MaterialTheme.typography.titleMedium)
+                            // Mostrar fecha guardada
+                            Text(
+                                text = reporte.fecha,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(text = "Falla: ${reporte.falla}", style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-
-                        AsyncImage(
-
-                            model = reporte.imageUri.toUri(),
-                            contentDescription = "Foto de falla",
-                            modifier = Modifier.fillMaxWidth().height(200.dp),
-                            contentScale = ContentScale.Crop
-                        )
+                        if (!reporte.imageUri.isNullOrBlank()) {
+                            AsyncImage(
+                                model = reporte.imageUri.toUri(),
+                                contentDescription = "Foto de falla",
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
             }
         }
+        // Boton para el pdf
+        Button(
+            onClick = { viewModel.exportarAPdf(listaReportes) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Exportar a PDF")
+        }
 
-        Button(onClick = { navigateBack() }, modifier = Modifier.fillMaxWidth()) {
-            Text("Regresar")
+        Spacer(modifier = Modifier.height(8.dp)) // Espaciado estético entre botones
+
+        Button(
+            onClick = { navigateBack() }, modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Regresar al Formulario")
         }
     }
 }

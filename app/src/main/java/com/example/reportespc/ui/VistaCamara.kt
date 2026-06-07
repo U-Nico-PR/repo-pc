@@ -1,10 +1,14 @@
 package com.example.reportespc.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,77 +24,119 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
-
 @Composable
 fun VistaCamara(viewModel: ReporteViewModel, navigateBack: () -> Unit) {
     val context = LocalContext.current
     var tempUri by remember { mutableStateOf<Uri?>(null) }
 
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture(),
-        onResult = { success ->
-            if (success && tempUri != null) {
-                viewModel.imageUriTemp.value = tempUri.toString()
-            }
-        }
-    )
+    // Obtenemos la uri
+    val imagenSeleccionada = viewModel.imagenUriTemp.value.toString()
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        if (viewModel.imageUriTemp.value != null) {
-            AsyncImage(
-                model = viewModel.imageUriTemp.value,
-                contentDescription = "Foto del reporte",
-                modifier = Modifier.size(350.dp).padding(bottom = 20.dp)
+    // Laucher de camara
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempUri != null) {
+            viewModel.imagenUriTemp.value = tempUri.toString()
+        }
+    }
+
+    // Laucher de galeria
+    val galleryLuncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+           try {
+               context.contentResolver.takePersistableUriPermission(
+                   it,
+                   Intent.FLAG_GRANT_READ_URI_PERMISSION
+               )
+           } catch (e: Exception) {
+
+           }
+        viewModel.imagenUriTemp.value = it.toString()
+       }
+    }
+
+    // Permiso de camara
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val file = crearArchivo(context)
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                file
             )
-            Text("Foto lista para guardarse")
+            tempUri = uri
+            cameraLauncher.launch(uri)
         } else {
-            Text("Aún no hay fotografía", modifier = Modifier.padding(bottom = 20.dp))
+            println("Permiso de cámara denegado")
+        }
+    }
+
+    // UI Optimización con scroll vertical automático
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(modifier = Modifier.height(20.dp))
+        if (imagenSeleccionada.isNullOrBlank()) {
+            AsyncImage(
+                model = Uri.parse(imagenSeleccionada),
+                contentDescription = "Foto del reporte",
+                modifier = Modifier
+                    .size(300.dp)
+                    .padding(bottom = 20.dp)
+            )
+            Text("Imagen lista para el reporte")
+        } else {
+            Text("Aún no hay imagen asignada", modifier = Modifier.padding(bottom = 20.dp))
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // Boton Cámara
         Button(
-            onClick = {
-                val file = crearArchivo(context)
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    file
-                )
-                tempUri = uri
-                cameraLauncher.launch(uri)
-            },
+            onClick = { permissionLauncher.launch(Manifest.permission.CAMERA)},
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (viewModel.imageUriTemp.value == null) "Abrir Cámara" else "Tomar Otra Foto")
+            Text(if (imagenSeleccionada.isBlank()) "Tomar Foto" else "Tomar Otra Foto")
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // Botón galería
+        Button(
+            onClick = { galleryLuncher.launch("image/*") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Seleccionar de la Galería")
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Botón para confirmar y regresar al formulario
         Button(
             onClick = {
-                viewModel.guardarReporte()
                 navigateBack()
             },
             modifier = Modifier.fillMaxWidth(),
             // Solo permitir guardar si hay foto
-            enabled = viewModel.imageUriTemp.value != null
+            enabled = imagenSeleccionada.isNotBlank()
         ) {
-            Text("Guardar Reporte y Regresar")
+            Text("Confirmar Imagen y Regresar")
         }
     }
 }
 
-
 fun crearArchivo(context: Context): File {
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    val fileName = "REPORTE_${timeStamp}_"
-    // Usamos filesDir en lugar de cacheDir para que las imágenes sean persistentes
-    val directory = context.filesDir
-    return File.createTempFile(fileName, ".jpg", directory)
+    val tiempo = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val nombreArchivo = "REPORTE_${tiempo}"
+    val directorio = context.filesDir
+    return File.createTempFile(nombreArchivo,".jpg", directorio)
 }
